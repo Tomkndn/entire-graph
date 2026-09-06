@@ -15,9 +15,22 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Callable, Iterable, Sequence
 
 from . import matcher, parser
+
+# Optional hook the dashboard uses to stream pipeline events. It is called with
+# (event_name, payload) and must not raise.
+ProgressFn = Callable[[str, dict], None]
+
+
+def _emit(progress: ProgressFn | None, event: str, payload: dict) -> None:
+    if progress is None:
+        return
+    try:
+        progress(event, payload)
+    except Exception:  # pragma: no cover - progress is best-effort
+        pass
 
 PYTEST_ARGS = ["-q", "--tb=short", "--no-header"]
 FAILURE_TAIL_LINES = 50
@@ -204,6 +217,7 @@ def resolve_affected_tests(
     graph: parser.Graph | None = None,
     max_depth: int = 0,
     worktree: bool = True,
+    progress: ProgressFn | None = None,
 ) -> dict:
     """Compute the import surface and the tests that cover it.
 
@@ -220,7 +234,11 @@ def resolve_affected_tests(
     import_surface = parser.get_modified_import_surface(
         modified_files=modified_files, graph=graph, max_depth=max_depth
     )
+    _emit(progress, "surface_detected", {
+        "modified_files": modified_files, "import_surface": import_surface,
+    })
 
+    _emit(progress, "db_query", {"status": "querying"})
     db_tests = db.fetch_target_tests(repo_id, import_surface) if import_surface else []
     used = "db"
     tests = list(db_tests)
@@ -232,10 +250,15 @@ def resolve_affected_tests(
         tests = matcher.match_surface(import_surface, all_tests)
         used = "convention"
 
+    affected = sorted(set(tests))
+    _emit(progress, "db_query", {
+        "status": "complete", "affected_tests": affected, "source": used,
+    })
+
     return {
         "modified_files": modified_files,
         "import_surface": import_surface,
-        "affected_tests": sorted(set(tests)),
+        "affected_tests": affected,
         "source": used,
     }
 
@@ -251,8 +274,13 @@ def run_impact_analysis(
     dry_run: bool = False,
     timeout: float | None = None,
     update_status: bool = True,
+    progress: ProgressFn | None = None,
 ) -> dict:
-    """git diff → import surface → DB / convention → pytest → lean result."""
+    """git diff → import surface → DB / convention → pytest → lean result.
+
+    ``progress`` receives, in order: ``blast_started``, ``surface_detected``,
+    ``db_query`` (querying then complete), and ``test_result``.
+    """
     from .db import get_db
 
     own_db = db is None
@@ -260,6 +288,13 @@ def run_impact_analysis(
     started = time.monotonic()
     try:
         graph = parser.build_graph(repo_root, worktree=worktree)
+        if modified_files is None:
+            modified_files = parser.get_modified_files(repo_root)
+        modified_files = sorted(set(modified_files))
+        _emit(progress, "blast_started", {
+            "repo_id": repo_id, "modified_files": modified_files,
+        })
+
         analysis = resolve_affected_tests(
             repo_root,
             repo_id,
@@ -268,6 +303,7 @@ def run_impact_analysis(
             graph=graph,
             max_depth=max_depth,
             worktree=worktree,
+            progress=progress,
         )
 
         base = {
@@ -280,12 +316,20 @@ def run_impact_analysis(
         }
 
         if not analysis["modified_files"]:
-            return {**base, "status": STATUS_NO_CHANGES, "execution_time_seconds": 0.0,
-                    "target_tests_executed": [], "summary": "no modified files"}
+            outcome = {**base, "status": STATUS_NO_CHANGES,
+                       "execution_time_seconds": 0.0,
+                       "target_tests_executed": [], "summary": "no modified files"}
+            _emit(progress, "test_result", {"status": outcome["status"],
+                                            "result": outcome})
+            return outcome
 
         if not analysis["affected_tests"]:
-            return {**base, "status": STATUS_NO_TESTS, "execution_time_seconds": 0.0,
-                    "target_tests_executed": [], "summary": "no affected tests"}
+            outcome = {**base, "status": STATUS_NO_TESTS,
+                       "execution_time_seconds": 0.0,
+                       "target_tests_executed": [], "summary": "no affected tests"}
+            _emit(progress, "test_result", {"status": outcome["status"],
+                                            "result": outcome})
+            return outcome
 
         run = run_targeted_tests(
             analysis["affected_tests"],
@@ -305,6 +349,8 @@ def run_impact_analysis(
                 except Exception:  # pragma: no cover - status is best-effort
                     pass
 
+        _emit(progress, "test_result", {"status": merged["status"],
+                                        "result": merged})
         return merged
     finally:
         if own_db:
