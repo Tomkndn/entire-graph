@@ -1,0 +1,54 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "06f1579dba32",
+  "session_id": "fba5aed5-eb59-40a7-8b4f-013521b7a42e",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-06T05:25:53.545Z",
+  "branch": "git-blast",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "git-blast/frontend/README.md",
+    "git-blast/frontend/index.html",
+    "git-blast/frontend/package.json",
+    "git-blast/frontend/src/App.tsx",
+    "git-blast/frontend/src/GraphCanvas.tsx",
+    "git-blast/frontend/src/layout.ts",
+    "git-blast/frontend/src/main.tsx",
+    "git-blast/frontend/src/styles.css",
+    "git-blast/frontend/src/types.ts",
+    "git-blast/frontend/src/useWebSocket.ts",
+    "git-blast/frontend/src/vite-env.d.ts",
+    "git-blast/frontend/tsconfig.json",
+    "git-blast/frontend/vite.config.ts",
+    "git-blast/src/server.py",
+    "git-blast/tests/test_server.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "7922187197f4",
+  "checkpoint_transcript_start": 631,
+  "transcript_lines_at_start": 631,
+  "compact_transcript_start": 115,
+  "token_usage": {
+    "input_tokens": 54,
+    "cache_creation_tokens": 20238,
+    "cache_read_tokens": 6208564,
+    "output_tokens": 16512,
+    "api_call_count": 27
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-06T05:25:53.472316Z",
+    "agent_lines": 856,
+    "agent_removed": 3,
+    "human_added": 2100,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2956,
+    "total_lines_changed": 2959,
+    "agent_percentage": 29.03007772896249,
+    "metric_version": 2
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "06f1579dba32",
+  "strategy": "manual-commit",
+  "branch": "git-blast",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "git-blast/frontend/README.md",
+    "git-blast/frontend/index.html",
+    "git-blast/frontend/package.json",
+    "git-blast/frontend/src/App.tsx",
+    "git-blast/frontend/src/GraphCanvas.tsx",
+    "git-blast/frontend/src/layout.ts",
+    "git-blast/frontend/src/main.tsx",
+    "git-blast/frontend/src/styles.css",
+    "git-blast/frontend/src/types.ts",
+    "git-blast/frontend/src/useWebSocket.ts",
+    "git-blast/frontend/src/vite-env.d.ts",
+    "git-blast/frontend/tsconfig.json",
+    "git-blast/frontend/vite.config.ts",
+    "git-blast/src/server.py",
+    "git-blast/tests/test_server.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/06/f1579dba32/0/metadata.json",
+      "transcript": "/06/f1579dba32/0/full.jsonl",
+      "compact_transcript": "/06/f1579dba32/0/transcript.jsonl",
+      "content_hash": "/06/f1579dba32/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 54,
+    "cache_creation_tokens": 20238,
+    "cache_read_tokens": 6208564,
+    "output_tokens": 16512,
+    "api_call_count": 27
+  }
+}
