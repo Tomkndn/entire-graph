@@ -7,7 +7,8 @@ requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.110",
     "uvicorn[standard]>=0.29",
-    "mcp>=1.0",
+    # MCP v2: `mcp.server.mcpserver.MCPServer` (the renamed FastMCP).
+    "mcp>=2.0",
 ]
 
 [project.optional-dependencies]

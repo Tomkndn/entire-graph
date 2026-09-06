@@ -221,8 +221,8 @@ def resolve_affected_tests(
 ) -> dict:
     """Compute the import surface and the tests that cover it.
 
-    Returns ``{modified_files, import_surface, affected_tests, sources}`` where
-    ``sources`` records which mechanism (``db`` / ``convention``) produced the
+    Returns ``{modified_files, import_surface, affected_tests, source}`` where
+    ``source`` records which mechanism (``db`` / ``convention``) produced the
     test list.
     """
     if graph is None:
