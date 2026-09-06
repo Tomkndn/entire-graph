@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "df3b31ed735a",
+  "session_id": "fba5aed5-eb59-40a7-8b4f-013521b7a42e",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-06T05:21:53.740358Z",
+  "branch": "git-blast",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "git-blast/src/runner.py",
+    "git-blast/src/server.py",
+    "git-blast/tests/test_server.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "7922187197f4",
+  "checkpoint_transcript_start": 570,
+  "transcript_lines_at_start": 570,
+  "compact_transcript_start": 103,
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 16999,
+    "cache_read_tokens": 2535650,
+    "output_tokens": 13932,
+    "api_call_count": 12
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-06T05:21:53.681248Z",
+    "agent_lines": 415,
+    "agent_removed": 7,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 415,
+    "total_lines_changed": 422,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
