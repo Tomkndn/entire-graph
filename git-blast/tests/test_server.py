@@ -46,7 +46,7 @@ def project(tmp_path, monkeypatch):
 
 
 @pytest.fixture
-def client(project):
+def client(project, tmp_path):
     db_file = project / "server.db"
     seed = SQLiteDB(db_file)
     seed.upsert_mapping("repo", "src/a.py", "tests/test_a.py")
@@ -56,6 +56,7 @@ def client(project):
         repo_root=str(project),
         repo_id="repo",
         db_factory=lambda: SQLiteDB(db_file),
+        static_dir=tmp_path / "no-static-build",
     )
     with TestClient(app) as c:
         yield c
@@ -86,6 +87,22 @@ def test_graph_endpoint(client):
     assert body["modified_files"] == ["src/b.py"]
     assert "src/a.py" in body["import_surface"]
     assert {"source", "target"} <= set(body["edges"][0])
+
+
+def test_serves_static_build_when_present(project, tmp_path):
+    static = tmp_path / "static"
+    static.mkdir()
+    (static / "index.html").write_text("<!doctype html><title>Git-Blast Live</title>")
+    app = server.create_app(
+        repo_root=str(project), repo_id="repo",
+        db_factory=lambda: SQLiteDB(project / "s.db"),
+        static_dir=static,
+    )
+    with TestClient(app) as c:
+        resp = c.get("/")
+    assert resp.status_code == 200
+    assert "Git-Blast Live" in resp.text
+    assert resp.headers["content-type"].startswith("text/html")
 
 
 def test_graph_endpoint_snapshot_error(project, monkeypatch):

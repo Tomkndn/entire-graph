@@ -97,8 +97,10 @@ def create_app(
     repo_id: str | None = None,
     *,
     db_factory: Callable[[], object] | None = None,
+    static_dir: str | Path | None = None,
 ) -> FastAPI:
     settings = Settings.from_env(repo_root, repo_id, db_factory)
+    static_path = Path(static_dir) if static_dir is not None else STATIC_DIR
     app = FastAPI(title="Git-Blast Live")
     manager = ConnectionManager()
     app.state.settings = settings
@@ -191,8 +193,8 @@ def create_app(
         finally:
             await manager.disconnect(ws)
 
-    if STATIC_DIR.is_dir() and (STATIC_DIR / "index.html").is_file():
-        app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
+    if static_path.is_dir() and (static_path / "index.html").is_file():
+        app.mount("/", StaticFiles(directory=str(static_path), html=True), name="static")
     else:
         @app.get("/")
         async def index() -> dict:
