@@ -1,0 +1,80 @@
+> uv run python -m src.cli test \
+  --repo-root /Users/tom/Desktop/Github/blr/requests \
+  --repo-id requests
+{
+  "affected_tests": [
+    "tests/test_adapters.py",
+    "tests/test_hooks.py",
+    "tests/test_lowlevel.py",
+    "tests/test_packages.py",
+    "tests/test_requests.py",
+    "tests/test_testserver.py",
+    "tests/test_utils.py"
+  ],
+  "command": "pytest -q --tb=short --no-header tests/test_adapters.py tests/test_hooks.py tests/test_lowlevel.py tests/test_packages.py tests/test_requests.py tests/test_testserver.py tests/test_utils.py",
+  "execution_time_seconds": 69.242,
+  "failure_summary": "... (output truncated to last 50 lines) ...\n=============================== warnings summary ===============================\ntests/test_requests.py::TestRequests::test_set_basicauth[42-42]\ntests/test_requests.py::TestRequests::test_set_basicauth[42-42]\n  /Users/tom/Desktop/Github/blr/requests/src/requests/auth.py:45: DeprecationWarning: Non-string usernames will no longer be supported in Requests 3.0.0. Please convert the object you've passed in (42) to a string or bytes object in the near future to avoid problems.\n    warnings.warn(\n\ntests/test_requests.py::TestRequests::test_set_basicauth[42-42]\ntests/test_requests.py::TestRequests::test_set_basicauth[42-42]\n  /Users/tom/Desktop/Github/blr/requests/src/requests/auth.py:55: DeprecationWarning: Non-string passwords will no longer be supported in Requests 3.0.0. Please convert the object you've passed in (<class 'int'>) to a string or bytes object in the near future to avoid problems.\n    warnings.warn(\n\ntests/test_requests.py::TestRequests::test_set_basicauth[None-None]\ntests/test_requests.py::TestRequests::test_set_basicauth[None-None]\n  /Users/tom/Desktop/Github/blr/requests/src/requests/auth.py:45: DeprecationWarning: Non-string usernames will no longer be supported in Requests 3.0.0. Please convert the object you've passed in (None) to a string or bytes object in the near future to avoid problems.\n    warnings.warn(\n\ntests/test_requests.py::TestRequests::test_set_basicauth[None-None]\ntests/test_requests.py::TestRequests::test_set_basicauth[None-None]\n  /Users/tom/Desktop/Github/blr/requests/src/requests/auth.py:55: DeprecationWarning: Non-string passwords will no longer be supported in Requests 3.0.0. Please convert the object you've passed in (<class 'NoneType'>) to a string or bytes object in the near future to avoid problems.\n    warnings.warn(\n\ntests/test_requests.py::TestPreparingURLs::test_different_connection_pool_for_tls_settings_verify_True\ntests/test_requests.py::TestPreparingURLs::test_different_connection_pool_for_tls_settings_verify_bundle_expired_cert\ntests/test_requests.py::TestPreparingURLs::test_different_connection_pool_for_tls_settings_verify_bundle_unexpired_cert\ntests/test_requests.py::TestPreparingURLs::test_different_connection_pool_for_mtls_settings\n  /Users/tom/Desktop/Github/blr/requests/.venv/lib/python3.13/site-packages/urllib3/connectionpool.py:1110: InsecureRequestWarning: Unverified HTTPS request is being made to host 'localhost'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings\n    warnings.warn(\n\ntests/test_utils.py::TestContentEncodingDetection::test_none\ntests/test_utils.py::TestContentEncodingDetection::test_pragmas[<meta charset=\"UTF-8\">]\ntests/test_utils.py::TestContentEncodingDetection::test_pragmas[<meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\">]\ntests/test_utils.py::TestContentEncodingDetection::test_pragmas[<meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />]\ntests/test_utils.py::TestContentEncodingDetection::test_pragmas[<?xml version=\"1.0\" encoding=\"UTF-8\"?>]\ntests/test_utils.py::TestContentEncodingDetection::test_precedence\n  /Users/tom/Desktop/Github/blr/requests/src/requests/utils.py:528: DeprecationWarning: In requests 3.0, get_encodings_from_content will be removed. For more information, please see the discussion on issue #2266. (This warning should only appear once.)\n    warnings.warn(\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED tests/test_lowlevel.py::test_use_proxy_from_environment[http_proxy-http]\nFAILED tests/test_lowlevel.py::test_use_proxy_from_environment[https_proxy-https]\nFAILED tests/test_lowlevel.py::test_use_proxy_from_environment[all_proxy-http]\nFAILED tests/test_lowlevel.py::test_use_proxy_from_environment[all_proxy-https]\nFAILED tests/test_lowlevel.py::test_use_proxy_from_environment[HTTP_PROXY-http]\nFAILED tests/test_lowlevel.py::test_use_proxy_from_environment[HTTPS_PROXY-https]\nFAILED tests/test_lowlevel.py::test_use_proxy_from_environment[ALL_PROXY-http]\nFAILED tests/test_lowlevel.py::test_use_proxy_from_environment[ALL_PROXY-https]\n8 failed, 584 passed, 15 skipped, 1 xfailed, 18 warnings in 68.85s (0:01:08)\n\n[2026-09-06 11:31:01,826] WARNING in core: flasgger is not installed; serving the static landing page at / and skipping the Swagger UI and /spec.json.",
+  "import_surface": [
+    "docs/conf.py",
+    "src/requests/__init__.py",
+    "src/requests/_types.py",
+    "src/requests/adapters.py",
+    "src/requests/api.py",
+    "src/requests/auth.py",
+    "src/requests/cookies.py",
+    "src/requests/exceptions.py",
+    "src/requests/hooks.py",
+    "src/requests/models.py",
+    "src/requests/sessions.py",
+    "src/requests/utils.py",
+    "tests/test_adapters.py",
+    "tests/test_hooks.py",
+    "tests/test_lowlevel.py",
+    "tests/test_packages.py",
+    "tests/test_requests.py",
+    "tests/test_testserver.py",
+    "tests/test_utils.py"
+  ],
+  "modified_files": [
+    "src/requests/utils.py"
+  ],
+  "repo_id": "requests",
+  "repo_root": "/Users/tom/Desktop/Github/blr/requests",
+  "returncode": 1,
+  "status": "FAILED",
+  "summary": "8 failed, 584 passed, 15 skipped, 1 xfailed, 18 warnings in 68.85s (0:01:08)",
+  "target_tests_executed": [
+    "tests/test_adapters.py",
+    "tests/test_hooks.py",
+    "tests/test_lowlevel.py",
+    "tests/test_packages.py",
+    "tests/test_requests.py",
+    "tests/test_testserver.py",
+    "tests/test_utils.py"
+  ],
+  "test_source": "db",
+  "total_time_seconds": 71.331
+}
+
+I tested it manually while i added one single comment on utils.py but it still shows failures of test files can you tell me why so and how should we trigger this test cases?
+
+---
+
+it worked thanks buddy well done
+
+---
+
+can you build this file 
+
+BULDATHON.md outline
+# Project name
+## One-sentence summary
+## Problem, intended user and why it matters
+## Selected Entire track and why Entire is essential
+## Architecture and main workflow
+## Entire Graph findings and verification
+## Noon Curveball: what changed and how we adapted
+## Checkpoint links and what each checkpoint proves
+## Setup, run and test instructions
+## Databricks use, data sources and limitations (if applicable)
+## Known limitations and next steps
