@@ -1,0 +1,71 @@
+"""MCP server exposing Git-Blast to coding agents (SPEC.md "mcp_server.py").
+
+One tool, ``git_blast_test(repo_id)``, built on ``MCPServer`` (MCP v2). It runs
+the full pipeline — import surface → DB lookup → convention fallback → pytest —
+and returns the lean single-line agent payload so the agent's context stays
+small.
+
+Run it over stdio::
+
+    python -m src.mcp_server
+"""
+
+from __future__ import annotations
+
+import os
+
+from mcp.server.mcpserver import MCPServer
+
+from . import runner
+
+# Resolved once at import so it is the tool's schema default (SPEC env table).
+DEFAULT_REPO_ID = os.environ.get("GIT_BLAST_REPO_ID", "main-repo")
+
+
+def _repo_root() -> str:
+    return os.environ.get("GIT_BLAST_REPO_ROOT", ".")
+
+
+def run_git_blast_test(
+    repo_id: str | None = None,
+    *,
+    repo_root: str | None = None,
+    db=None,
+    max_depth: int = 0,
+    dry_run: bool = False,
+) -> str:
+    """Core of the tool, separated so it is testable without an MCP client."""
+    result = runner.run_impact_analysis(
+        repo_root or _repo_root(),
+        repo_id or DEFAULT_REPO_ID,
+        db=db,
+        max_depth=max_depth,
+        dry_run=dry_run,
+    )
+    return runner.format_agent_payload(result)
+
+
+mcp = MCPServer("git-blast")
+
+
+@mcp.tool()
+def git_blast_test(repo_id: str = DEFAULT_REPO_ID) -> str:
+    """Run only the tests affected by the current working-tree changes.
+
+    Detects the modified files in the target repo, traces the reverse import
+    graph to every file that could be affected, looks up the tests that cover
+    that surface (falling back to naming conventions), runs just those with
+    pytest, and returns a compact JSON string: status, import_surface,
+    affected/executed tests, timing, and — on failure — the last lines of the
+    pytest output. Use this instead of running the whole test suite after an
+    edit.
+    """
+    return run_git_blast_test(repo_id)
+
+
+def main() -> None:  # pragma: no cover - process entry point
+    mcp.run()
+
+
+if __name__ == "__main__":  # pragma: no cover
+    main()
