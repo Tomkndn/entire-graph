@@ -571,7 +571,7 @@ _DEMO_FALLBACK_MAPPINGS = (
 def _source_like(path: str) -> bool:
     from . import matcher
 
-    return path.endswith(".py") and not matcher.looks_like_test_file(path)
+    return path.endswith(".py") and not matcher.in_test_tree(path)
 
 
 def auto_seed(
@@ -624,7 +624,7 @@ def auto_seed(
     # 1. TESTS relations (symbol-accurate).
     for edge in graph.test_edges:
         src, test = edge["source_file"], edge["test_file"]
-        if matcher.looks_like_test_file(src) or not matcher.looks_like_test_file(test):
+        if matcher.in_test_tree(src) or not matcher.looks_like_test_file(test):
             continue
         record(src, test, edge.get("source_symbol"), "tests")
 

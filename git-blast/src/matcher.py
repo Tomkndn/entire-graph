@@ -29,15 +29,27 @@ def _norm(path: str) -> str:
 
 
 def looks_like_test_file(path: str) -> bool:
-    """True for Python test files by the usual pytest/unittest conventions."""
+    """True only for runnable pytest modules: ``test_*.py`` / ``*_test.py``.
+
+    A helper like ``tests/utils.py`` or ``tests/conftest.py`` lives in the test
+    tree but is not a test to execute — use :func:`in_test_tree` for that.
+    """
     p = _norm(path)
     if not p.endswith(".py"):
         return False
     base = posixpath.basename(p)
-    if base.startswith("test_") or base.endswith("_test.py") or base == "conftest.py":
+    return base.startswith("test_") or base.endswith("_test.py")
+
+
+def in_test_tree(path: str) -> bool:
+    """True for anything that belongs to the test suite: a test module, a
+    ``conftest.py``, or any ``.py`` under a ``tests/`` / ``test/`` directory."""
+    p = _norm(path)
+    if not p.endswith(".py"):
+        return False
+    if looks_like_test_file(p) or posixpath.basename(p) == "conftest.py":
         return True
-    segments = p.split("/")[:-1]
-    return any(seg in _TEST_DIR_NAMES for seg in segments)
+    return any(seg in _TEST_DIR_NAMES for seg in p.split("/")[:-1])
 
 
 def source_stem(source_file: str) -> str:
@@ -58,7 +70,7 @@ def _basename_variants(stem: str) -> set[str]:
 def match_tests(source_file: str, candidate_tests: Iterable[str]) -> list[str]:
     """Ordered, deduplicated test files that conventionally cover ``source_file``."""
     src = _norm(source_file)
-    if looks_like_test_file(src):
+    if in_test_tree(src):
         return []
 
     candidates = [_norm(c) for c in candidate_tests if _norm(c).endswith(".py")]
@@ -118,7 +130,7 @@ def match_surface(
     out: list[str] = []
     seen: set[str] = set()
     for source in import_surface:
-        if looks_like_test_file(source):
+        if in_test_tree(source):
             continue
         for t in match_tests(source, candidates):
             if t not in seen:

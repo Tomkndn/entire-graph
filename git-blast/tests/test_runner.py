@@ -50,14 +50,16 @@ def project(tmp_path):
 
 # --- helpers ----------------------------------------------------------
 
-def test_filter_test_files_keeps_only_existing_tests(project):
+def test_filter_test_files_keeps_only_existing_test_modules(project):
     (project / "tests" / "helper.py").write_text("x = 1\n")
+    (project / "tests" / "b_test.py").write_text("def test_b():\n    assert True\n")
     out = _filter_test_files(
         ["tests/test_a.py", "tests/test_a.py", "src/a.py", "tests/missing_test.py",
-         "tests/helper.py"],
+         "tests/helper.py", "tests/b_test.py"],
         project,
     )
-    assert out == ["tests/helper.py", "tests/test_a.py"]
+    # helper.py is in the test tree but is not a runnable module -> dropped
+    assert out == ["tests/b_test.py", "tests/test_a.py"]
 
 
 def test_find_venv_python(tmp_path):

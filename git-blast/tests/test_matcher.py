@@ -1,6 +1,7 @@
 """Stage 3 coverage: convention-based src -> test matching."""
 
 from src.matcher import (
+    in_test_tree,
     looks_like_test_file,
     match_surface,
     match_tests,
@@ -8,14 +9,26 @@ from src.matcher import (
 )
 
 
-def test_looks_like_test_file():
+def test_looks_like_test_file_is_strict():
     assert looks_like_test_file("tests/test_auth.py")
     assert looks_like_test_file("pkg/auth_test.py")
-    assert looks_like_test_file("a/tests/helpers.py")
-    assert looks_like_test_file("conftest.py")
+    # helpers and conftest live in the test tree but are not runnable modules
+    assert not looks_like_test_file("a/tests/helpers.py")
+    assert not looks_like_test_file("tests/utils.py")
+    assert not looks_like_test_file("tests/conftest.py")
     assert not looks_like_test_file("src/auth.py")
     assert not looks_like_test_file("tests/test_auth.txt")
     assert not looks_like_test_file("README.md")
+
+
+def test_in_test_tree():
+    assert in_test_tree("tests/test_auth.py")
+    assert in_test_tree("tests/utils.py")
+    assert in_test_tree("tests/conftest.py")
+    assert in_test_tree("a/b/test/fixtures.py")
+    assert not in_test_tree("src/auth.py")
+    assert not in_test_tree("src/testing.py")  # "test" must be a path segment
+    assert not in_test_tree("tests/data.json")
 
 
 def test_source_stem():
