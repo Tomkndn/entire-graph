@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "ced633264dc8",
+  "strategy": "manual-commit",
+  "branch": "git-blast",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".gitignore",
+    "git-blast/README.md",
+    "git-blast/conftest.py",
+    "git-blast/demo_repo/README.md",
+    "git-blast/demo_repo/conftest.py",
+    "git-blast/demo_repo/src/__init__.py",
+    "git-blast/demo_repo/src/config.py",
+    "git-blast/demo_repo/src/jwt.py",
+    "git-blast/demo_repo/tests/test_config.py",
+    "git-blast/demo_repo/tests/test_jwt.py",
+    "git-blast/pyproject.toml",
+    "git-blast/schema.sql",
+    "git-blast/src/__init__.py",
+    "git-blast/src/db.py",
+    "git-blast/tests/test_db.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ce/d633264dc8/0/metadata.json",
+      "transcript": "/ce/d633264dc8/0/full.jsonl",
+      "compact_transcript": "/ce/d633264dc8/0/transcript.jsonl",
+      "content_hash": "/ce/d633264dc8/0/content_hash.txt",
+      "prompt": "/ce/d633264dc8/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 96,
+    "cache_creation_tokens": 93873,
+    "cache_read_tokens": 4114383,
+    "output_tokens": 43492,
+    "api_call_count": 48
+  }
+}

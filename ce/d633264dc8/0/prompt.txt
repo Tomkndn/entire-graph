@@ -1,0 +1,183 @@
+/Users/tom/Desktop/SPEC.md
+
+---
+
+I will help you with the above concern but first of all we dont want ot creata a new target dir we will build in enitre-graph with anothr branch
+
+---
+
+git blast is just a feature name it should live on enitre-graph only and it should live in another branch name - git-blast and soon I wll provide all specs details for what to build and how is the execution is going though anything else you need to know before I share full details?
+
+---
+
+# Build Git-Blast Live — Stage-by-Stage Implementation
+
+You are the primary engineer responsible for implementing Git-Blast Live according to the attached SPEC.md.
+
+## Source of truth
+
+SPEC.md is the single source of truth for this implementation.
+
+Do not redesign the architecture, invent alternative behavior, or simplify requirements unless the existing entire-graph codebase makes a requirement technically impossible as written.
+
+When the spec and your assumptions conflict, the spec wins.
+
+Read SPEC.md thoroughly before making implementation decisions.
+
+---
+
+# Your operating mode
+
+Implement this project incrementally in stages.
+
+Do NOT attempt to build the entire system in one pass.
+
+For every stage:
+
+1. Inspect the existing repository and understand the relevant code.
+2. Identify exactly which parts of the spec belong to this stage.
+3. Implement those parts.
+4. Add/update tests for the implementation.
+5. Run the relevant test suite.
+6. Run formatting/lint/build checks where applicable.
+7. Fix all issues found.
+8. Review the resulting diff.
+9. Commit the completed stage with a clear conventional commit message.
+10. Only after the stage is genuinely complete, proceed to the next stage.
+
+### Important
+
+A stage should represent a reasonable, reviewable unit of work.
+
+Do not create dozens of tiny commits for individual functions.
+
+Do not make one enormous commit containing the entire project.
+
+Aim for commits that could realistically be reviewed independently.
+
+---
+
+# Git rules
+
+Before starting:
+
+
+git status
+git branch --show-current
+git log -5 --oneline
+
+
+Do not discard or overwrite pre-existing user changes.
+
+If the working tree contains unrelated modifications:
+
+* leave them untouched
+* do not include them in your commits
+* account for them when reviewing git diff
+
+After each completed stage:
+
+
+git status
+git diff
+git diff --check
+
+
+Then commit only the files belonging to that stage.
+
+Use commit messages such as:
+
+
+feat(go): add test-impact command scaffolding
+feat(go): implement import surface traversal
+test(go): add test-impact flag and matcher coverage
+feat(python): add graph parser and test mapping database
+feat(python): add targeted test runner
+feat(python): add checkpoint recovery
+feat(python): add MCP server
+feat(web): add test impact dashboard
+
+
+Never commit secrets, credentials, local databases, virtual environments, build artifacts, or unrelated changes.
+
+---
+
+# Stage 0 — Repository reconnaissance
+
+Before writing code, inspect the repository thoroughly.
+
+Determine:
+
+* current repository structure
+* Go module/package structure
+* existing CLI architecture
+* command dispatch implementation
+* help system
+* existing internal/cli conventions
+* gitutil APIs
+* sem APIs
+* termsafe APIs
+* existing graph snapshot structures
+* existing tests and testing conventions
+* build commands
+* whether git-blast/ already exists
+* whether a frontend already exists
+* whether there are existing dependencies that affect the implementation
+
+Specifically inspect the integration points described in SPEC.md:
+
+* internal/cli/root.go
+* internal/cli/help.go
+* internal/cli/help_test.go
+
+Also locate the actual APIs corresponding to:
+
+* gitutil.ChangedFiles()
+* sem.LoadOrBuildProviderSnapshot()
+
+Do not assume their signatures.
+
+### At the end of Stage 0
+
+Do not implement the feature yet.
+
+Produce a short internal implementation plan based on the actual repository.
+
+Then proceed to Stage 1.
+
+---
+
+# Stage 1 — Tier 1 command scaffolding and CLI parsing
+
+Implement the foundation of:
+
+
+entire graph test-impact
+
+
+Follow the exact CLI specification in Section 3.3.
+
+Implement:
+
+* testImpactFlags
+* parseTestImpactFlags
+* command dispatch
+* help entry
+* basic runTestImpact
+* validation of:
+
+  * --watch-interval >= 1
+  * --max-depth >= 0
+  * unknown flags
+  * value-taking flags
+* default values exactly as specified
+
+Implement the result structure:
+
+---
+
+this is the actual prompt - /Users/tom/Desktop/Claude\ Code\ —\ Git-Blast\ Live\ Build\ Prompt\ \(1\).md
+
+---
+
+Use the current SPEC.md, Tier 2 Python package only

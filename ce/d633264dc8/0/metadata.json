@@ -1,0 +1,67 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "ced633264dc8",
+  "session_id": "fba5aed5-eb59-40a7-8b4f-013521b7a42e",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-06T05:05:26.539171Z",
+  "branch": "git-blast",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".gitignore",
+    "git-blast/README.md",
+    "git-blast/conftest.py",
+    "git-blast/demo_repo/README.md",
+    "git-blast/demo_repo/conftest.py",
+    "git-blast/demo_repo/src/__init__.py",
+    "git-blast/demo_repo/src/config.py",
+    "git-blast/demo_repo/src/jwt.py",
+    "git-blast/demo_repo/tests/test_config.py",
+    "git-blast/demo_repo/tests/test_jwt.py",
+    "git-blast/pyproject.toml",
+    "git-blast/schema.sql",
+    "git-blast/src/__init__.py",
+    "git-blast/src/db.py",
+    "git-blast/tests/test_db.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "7922187197f4",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 96,
+    "cache_creation_tokens": 93873,
+    "cache_read_tokens": 4114383,
+    "output_tokens": 43492,
+    "api_call_count": 48
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-06T05:05:26.505258Z",
+    "agent_lines": 732,
+    "agent_removed": 0,
+    "human_added": 2746,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 3478,
+    "total_lines_changed": 3478,
+    "agent_percentage": 21.046578493387006,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 266,
+      "user_lines_removed": 5,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "SPEC.md": 266
+      },
+      "user_removed_per_file": {
+        ".claude/settings.json": 5
+      }
+    }
+  ]
+}
