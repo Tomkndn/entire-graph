@@ -1,0 +1,170 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "1d92a8ee373c",
+  "session_id": "2e5775c2-396f-4a90-9967-2a991acd30d9",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-06T09:04:25.793291Z",
+  "branch": "git-blast",
+  "checkpoints_count": 11,
+  "save_step_count": 9,
+  "files_touched": [
+    "git-blast/BULDATHON.md",
+    "git-blast/README.md",
+    "git-blast/SPEC.md",
+    "git-blast/demo_repo_partial/README.md",
+    "git-blast/demo_repo_partial/conftest.py",
+    "git-blast/demo_repo_partial/generated/__init__.py",
+    "git-blast/demo_repo_partial/generated/_pb2.py",
+    "git-blast/demo_repo_partial/src/__init__.py",
+    "git-blast/demo_repo_partial/src/core.py",
+    "git-blast/demo_repo_partial/src/handlers/__init__.py",
+    "git-blast/demo_repo_partial/src/handlers/csv.py",
+    "git-blast/demo_repo_partial/src/handlers/pdf.py",
+    "git-blast/demo_repo_partial/src/registry.py",
+    "git-blast/demo_repo_partial/tests/test_core.py",
+    "git-blast/demo_repo_partial/tests/test_pdf_handler.py",
+    "git-blast/docs/evidence-consumers.md",
+    "git-blast/src/cli.py",
+    "git-blast/src/evidence.py",
+    "git-blast/src/mcp_server.py",
+    "git-blast/src/parser.py",
+    "git-blast/src/runner.py",
+    "git-blast/tests/fixtures/partial_repo.ndjson",
+    "git-blast/tests/test_evidence.py",
+    "git-blast/tests/test_partial_repo.py",
+    "git-blast/tests/test_runner.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "43c529270fca",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 352,
+    "cache_creation_tokens": 440745,
+    "cache_read_tokens": 31912325,
+    "output_tokens": 151080,
+    "api_call_count": 177
+  },
+  "session_metrics": {
+    "turn_count": 11
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-06T09:04:25.711536Z",
+    "agent_lines": 1379,
+    "agent_removed": 39,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1379,
+    "total_lines_changed": 1418,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 458,
+      "user_lines_removed": 5,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "git-blast/BULDATHON.md": 224,
+        "git-blast/src/evidence.py": 184,
+        "git-blast/src/parser.py": 50
+      },
+      "user_removed_per_file": {
+        ".claude/settings.json": 5
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 5,
+      "agent_lines_added": 480,
+      "agent_lines_removed": 0,
+      "user_removed_per_file": {
+        ".claude/settings.json": 5
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 5,
+      "agent_lines_added": 1712,
+      "agent_lines_removed": 39,
+      "user_removed_per_file": {
+        ".claude/settings.json": 5
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 5,
+      "agent_lines_added": 1712,
+      "agent_lines_removed": 39,
+      "user_removed_per_file": {
+        ".claude/settings.json": 5
+      }
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 5,
+      "agent_lines_added": 1712,
+      "agent_lines_removed": 39,
+      "user_removed_per_file": {
+        ".claude/settings.json": 5
+      }
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 0,
+      "user_lines_removed": 5,
+      "agent_lines_added": 1751,
+      "agent_lines_removed": 39,
+      "user_removed_per_file": {
+        ".claude/settings.json": 5
+      }
+    },
+    {
+      "checkpoint_number": 7,
+      "user_lines_added": 0,
+      "user_lines_removed": 5,
+      "agent_lines_added": 1751,
+      "agent_lines_removed": 39,
+      "user_removed_per_file": {
+        ".claude/settings.json": 5
+      }
+    },
+    {
+      "checkpoint_number": 8,
+      "user_lines_added": 0,
+      "user_lines_removed": 5,
+      "agent_lines_added": 1800,
+      "agent_lines_removed": 39,
+      "user_removed_per_file": {
+        ".claude/settings.json": 5
+      }
+    },
+    {
+      "checkpoint_number": 9,
+      "user_lines_added": 0,
+      "user_lines_removed": 5,
+      "agent_lines_added": 1837,
+      "agent_lines_removed": 39,
+      "user_removed_per_file": {
+        ".claude/settings.json": 5
+      }
+    },
+    {
+      "checkpoint_number": 10,
+      "user_lines_added": 0,
+      "user_lines_removed": 5,
+      "agent_lines_added": 1837,
+      "agent_lines_removed": 39,
+      "user_removed_per_file": {
+        ".claude/settings.json": 5
+      }
+    }
+  ]
+}

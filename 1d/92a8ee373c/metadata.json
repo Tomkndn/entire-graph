@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "1d92a8ee373c",
+  "strategy": "manual-commit",
+  "branch": "git-blast",
+  "checkpoints_count": 11,
+  "files_touched": [
+    "git-blast/BULDATHON.md",
+    "git-blast/README.md",
+    "git-blast/SPEC.md",
+    "git-blast/demo_repo_partial/README.md",
+    "git-blast/demo_repo_partial/conftest.py",
+    "git-blast/demo_repo_partial/generated/__init__.py",
+    "git-blast/demo_repo_partial/generated/_pb2.py",
+    "git-blast/demo_repo_partial/src/__init__.py",
+    "git-blast/demo_repo_partial/src/core.py",
+    "git-blast/demo_repo_partial/src/handlers/__init__.py",
+    "git-blast/demo_repo_partial/src/handlers/csv.py",
+    "git-blast/demo_repo_partial/src/handlers/pdf.py",
+    "git-blast/demo_repo_partial/src/registry.py",
+    "git-blast/demo_repo_partial/tests/test_core.py",
+    "git-blast/demo_repo_partial/tests/test_pdf_handler.py",
+    "git-blast/docs/evidence-consumers.md",
+    "git-blast/src/cli.py",
+    "git-blast/src/evidence.py",
+    "git-blast/src/mcp_server.py",
+    "git-blast/src/parser.py",
+    "git-blast/src/runner.py",
+    "git-blast/tests/fixtures/partial_repo.ndjson",
+    "git-blast/tests/test_evidence.py",
+    "git-blast/tests/test_partial_repo.py",
+    "git-blast/tests/test_runner.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/1d/92a8ee373c/0/metadata.json",
+      "transcript": "/1d/92a8ee373c/0/full.jsonl",
+      "compact_transcript": "/1d/92a8ee373c/0/transcript.jsonl",
+      "content_hash": "/1d/92a8ee373c/0/content_hash.txt",
+      "prompt": "/1d/92a8ee373c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 352,
+    "cache_creation_tokens": 440745,
+    "cache_read_tokens": 31912325,
+    "output_tokens": 151080,
+    "api_call_count": 177
+  }
+}

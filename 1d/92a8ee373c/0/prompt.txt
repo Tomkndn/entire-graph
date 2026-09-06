@@ -1,0 +1,88 @@
+entire status
+
+---
+
+currently for failure of our test case we dont have any fallbacks or verification path 
+can we implement something similar to the above phrase can you propose me a plan for it?
+
+---
+
+now i have more requirements to be implemented in the current features the list is as follows:
+
+TRACK 2: GRAPH IS EVIDENCE, NOT AN ORACLE
+Your Graph-powered experience has encountered a repository using dynamic dispatch, generated code, reflection, or another pattern that static analysis cannot fully resolve.
+
+The new requirements:
+
+The product must not present incomplete Graph relationships as certain.
+
+It must identify when analysis may be partial.
+
+It must provide a safe fallback or verification path.
+
+Existing behaviour for fully resolved code must continue to work.
+
+You must include a test or fixture representing incomplete analysis.
+
+Use Entire Graph to identify which parts of your implementation consume relationship, impact, or semantic diff evidence.
+
+Users and agents must be able to tell apart:
+
+Confirmed structural evidence
+
+Heuristic or incomplete evidence
+
+Claims that require source or test verification
+
+A partial analysis repository fixture is attached.
+
+---
+
+clarify our doubts then start implementing
+
+1. what is fixtures??
+2. what is this folder - partial_repo?
+
+---
+
+can you verify like what i shared about the requirements how we are solving those or implementing those?
+
+---
+
+yes go ahead, continue
+
+---
+
+can you provide me the brief summary of whta you have implemented right now
+
+---
+
+okay now provide me the steps for testing evidence.py using any repository with dynamic dispatch
+
+---
+
+in section B step 1 it shows some error
+> entire graph snapshot --repo /tmp/flask --format ndjson --worktree \
+  | python3 -c "import sys,json,collections; c=collections.Counter(); [c.update([json.loads(l).get('resolution')]) for l in sys.stdin if '\"IMPORTS\"' in l]; print(c)"
+
+⚠️  graph is DEGRADED: parsed 215/215 files, 1967 symbols, 7238 relations (languages: Bash, CSS, Dotenv, EditorConfig, Git Ignore, HTML, JSON, Make, Markdown, Pip Requirements, Python, SQL, TOML, YAML, reStructuredText).
+   The graph is incomplete; treat query results as partial.
+Counter({'name_only': 512, 'import_resolved': 179, None: 2})
+
+---
+
+for step 6 I got this one - warning: graph confidence 'low'; 25 item(s) need source/test verification (fallback_level=0)
+
+---
+
+can you test by own because i am always getting confidence as low for every test runnning
+
+---
+
+now all reqs are done i guess just complete or update the BUILDATHON.md file with the currenrt status of the feutres with no stray TODOs
+
+---
+
+okay cool now i want to record a demo video tell me the steps for recording 
+
+provide me full steps
