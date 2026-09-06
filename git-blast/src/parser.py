@@ -49,6 +49,8 @@ class Graph:
 
     files: dict[str, FileNode] = field(default_factory=dict)
     relations: list[dict] = field(default_factory=list)
+    # TESTS relations, resolved to file paths: {test_file, source_file, source_symbol}
+    test_edges: list[dict] = field(default_factory=list)
     repo_root: str | None = None
     repo_key: str | None = None
     commit: str | None = None
@@ -60,6 +62,27 @@ class Graph:
 
     def id_by_path(self) -> dict[str, str]:
         return {node.path: fid for fid, node in self.files.items()}
+
+    def forward_reachable_paths(self, start: str) -> set[str]:
+        """Every file ``start`` reaches by following forward ``IMPORTS`` edges."""
+        id_by_path = self.id_by_path()
+        start_id = id_by_path.get(start)
+        if start_id is None:
+            return set()
+        by_id = self.path_by_id()
+        seen: set[str] = set()
+        stack = [start_id]
+        while stack:
+            current = stack.pop()
+            node = self.files.get(current)
+            if node is None:
+                continue
+            for dep_id in node.imports:
+                if dep_id in seen:
+                    continue
+                seen.add(dep_id)
+                stack.append(dep_id)
+        return {by_id[i] for i in seen if i in by_id}
 
     def imported_by_paths(self) -> dict[str, set[str]]:
         """``path -> {paths that import it}`` (internal file→file only)."""
@@ -197,10 +220,38 @@ def parse_snapshot_ndjson(source: str | Iterable[str]) -> Graph:
             )
             continue
 
+        if record_type == "relation" and obj.get("type") == "TESTS":
+            # symbol -> symbol; resolve both sides to file paths. The test-side
+            # path is also carried in evidence[].file_path as a fallback.
+            edge = _resolve_tests_edge(obj)
+            if edge is not None:
+                graph.test_edges.append(edge)
+            continue
+
         # symbol / external / summary / anything else: ignored.
 
     _link_relations(graph)
     return graph
+
+
+def _resolve_tests_edge(obj: dict) -> dict | None:
+    from_id = obj.get("from_id") or ""
+    to_id = obj.get("to_id") or ""
+    test_file = resolve_path_from_id(from_id)
+    if test_file is None:
+        for ev in obj.get("evidence") or []:
+            if isinstance(ev, dict) and ev.get("file_path"):
+                test_file = ev["file_path"]
+                break
+    source_file = resolve_path_from_id(to_id)
+    if not test_file or not source_file:
+        return None
+    source_symbol = to_id.split(":")[-1] if ":" in to_id else None
+    return {
+        "test_file": test_file,
+        "source_file": source_file,
+        "source_symbol": source_symbol,
+    }
 
 
 def _link_relations(graph: Graph) -> None:

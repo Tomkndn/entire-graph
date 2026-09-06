@@ -135,12 +135,13 @@ def test_get_db_selects_databricks_when_configured(monkeypatch):
         get_db()
 
 
-def test_databricks_not_implemented_with_full_credentials(monkeypatch):
+def test_databricks_constructs_lazily_with_full_credentials(monkeypatch):
     monkeypatch.setenv("DATABRICKS_SERVER_HOSTNAME", "example.cloud.databricks.com")
     monkeypatch.setenv("DATABRICKS_HTTP_PATH", "/sql/1.0/warehouses/abc")
     monkeypatch.setenv("DATABRICKS_TOKEN", "dapi-xxx")
-    with pytest.raises(NotImplementedError):
-        get_db()
+    # Construction succeeds and defers connecting; no SQL Warehouse is touched.
+    db = get_db()
+    assert type(db).__name__ == "DatabricksDB"
 
 
 def test_module_reimport_is_clean():

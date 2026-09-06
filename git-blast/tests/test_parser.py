@@ -302,6 +302,36 @@ def test_snapshot_error_when_binary_missing(monkeypatch):
         build_graph("/tmp", entire_bin="definitely-not-a-real-binary")
 
 
+def test_tests_relations_resolved_to_paths():
+    graph = parse_snapshot_ndjson(
+        ndjson(
+            header(),
+            file_rec("src/a.py"),
+            file_rec("tests/test_a.py"),
+            {
+                "record_type": "relation",
+                "type": "TESTS",
+                "from_id": f"{REPO_KEY}:Python:tests/test_a.py:function:test_run",
+                "to_id": f"{REPO_KEY}:Python:src/a.py:function:run",
+                "evidence": [{"file_path": "tests/test_a.py"}],
+            },
+        )
+    )
+    assert graph.test_edges == [
+        {
+            "test_file": "tests/test_a.py",
+            "source_file": "src/a.py",
+            "source_symbol": "run",
+        }
+    ]
+
+
+def test_forward_reachable_paths_is_transitive():
+    g = chain_graph()  # a imports b, b imports c
+    assert g.forward_reachable_paths("a.py") == {"b.py", "c.py"}
+    assert g.forward_reachable_paths("c.py") == set()
+
+
 @pytest.mark.skipif(shutil.which("entire") is None, reason="entire CLI not installed")
 def test_live_snapshot_on_demo_repo():
     demo = os.path.join(os.path.dirname(os.path.dirname(__file__)), "demo_repo")
