@@ -1,0 +1,9 @@
+GIT_BLAST_REPO_ROOT=/Users/tom/Desktop/Github/blr/requests GIT_BLAST_REPO_ID=id python3 -m uvicorn src.server:app --port 8000    what to add in the id field?
+
+---
+
+okay this looks fine to me now lets test it out manually what do i have to do now? please provide me all required steps
+
+---
+
+Run option B and let me know then i can test it manually and provide me the steps as well in proper manner
