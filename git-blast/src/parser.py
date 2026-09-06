@@ -24,6 +24,8 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import Iterable, Sequence
 
+from . import evidence
+
 DEFAULT_ENTIRE_BIN = os.environ.get("GIT_BLAST_ENTIRE_BIN", "entire")
 SNAPSHOT_TIMEOUT_SECONDS = 300
 
@@ -41,6 +43,8 @@ class FileNode:
     language: str | None = None
     imports: set[str] = field(default_factory=set)      # file ids this file imports
     imported_by: set[str] = field(default_factory=set)  # file ids that import this file
+    language_tier: str | None = None                    # semantic / inventory-only
+    parsed: bool = True                                 # False if in partial_failures
 
 
 @dataclass
@@ -54,6 +58,67 @@ class Graph:
     repo_root: str | None = None
     repo_key: str | None = None
     commit: str | None = None
+
+    # -- Track 2: analysis-completeness signal from the snapshot -------
+    completeness_level: str = "ok"
+    partial_failures: list[dict] = field(default_factory=list)
+    warnings: list[dict] = field(default_factory=list)
+    language_tiers: dict[str, str] = field(default_factory=dict)
+    schema_features: list[str] = field(default_factory=list)
+    unparsed_files: list[str] = field(default_factory=list)
+    # {(importer_path, imported_path): evidence class} for internal IMPORTS edges
+    edge_class: dict[tuple[str, str], str] = field(default_factory=dict)
+
+    # -- completeness helpers -----------------------------------------
+
+    def resolution_supported(self) -> bool:
+        return "relation_resolution" in self.schema_features
+
+    # ``completeness_level`` values that mean files are actually missing from the
+    # graph — not merely that some relations are weak or some languages are
+    # inventory-only ("degraded", which is normal for any polyglot repo).
+    _INCOMPLETE_LEVELS = frozenset({"partial", "incomplete", "failed", "error"})
+
+    def snapshot_partial(self) -> bool:
+        """True when the snapshot is missing files it should have parsed.
+
+        ``partial_failures`` (a file the provider could not parse) or an
+        explicit incomplete ``completeness_level``. A plain ``degraded`` level
+        does *not* count — that is handled per-file via inventory-only languages
+        and ``unparsed_files`` scoped to the change.
+        """
+        return bool(self.partial_failures) or (
+            (self.completeness_level or "").lower() in self._INCOMPLETE_LEVELS
+        )
+
+    def inventory_only_languages(self) -> list[str]:
+        return sorted(
+            lang
+            for lang, tier in self.language_tiers.items()
+            if tier == evidence.INVENTORY_ONLY_TIER
+        )
+
+    def analysis_completeness(self) -> dict:
+        """Machine-readable summary of what the graph could *not* fully resolve."""
+        level = "ok"
+        if self.snapshot_partial():
+            level = "partial"
+        elif (
+            self.inventory_only_languages()
+            or self.unparsed_files
+            or (self.completeness_level or "").lower() == "degraded"
+        ):
+            level = "degraded"
+        return {
+            "level": level,
+            "completeness_level": self.completeness_level,
+            "partial_failures": [
+                {k: v for k, v in pf.items() if k in ("path", "file", "code", "reason")}
+                for pf in self.partial_failures
+            ],
+            "inventory_only_languages": self.inventory_only_languages(),
+            "unparsed_files": sorted(self.unparsed_files),
+        }
 
     # -- lookups --------------------------------------------------------
 
@@ -93,6 +158,28 @@ class Graph:
                 importer_path = by_id.get(importer_id)
                 if importer_path is not None:
                     out.setdefault(node.path, set()).add(importer_path)
+        return out
+
+    def imported_by_edges(self) -> dict[str, dict[str, str]]:
+        """``path -> {importer_path: evidence class}`` for internal IMPORTS.
+
+        Same shape as :meth:`imported_by_paths` but each importer carries the
+        class of the edge that connects it, so a blast-radius walk can keep the
+        weakest link it crossed.
+        """
+        by_id = self.path_by_id()
+        out: dict[str, dict[str, str]] = {
+            node.path: {} for node in self.files.values()
+        }
+        for node in self.files.values():
+            for importer_id in node.imported_by:
+                importer_path = by_id.get(importer_id)
+                if importer_path is None:
+                    continue
+                cls = self.edge_class.get(
+                    (importer_path, node.path), evidence.HEURISTIC
+                )
+                out.setdefault(node.path, {})[importer_path] = cls
         return out
 
     def as_dict(self) -> dict:
@@ -200,6 +287,7 @@ def parse_snapshot_ndjson(source: str | Iterable[str]) -> Graph:
             graph.repo_root = obj.get("repo_root")
             graph.repo_key = obj.get("repo_key")
             graph.commit = obj.get("commit")
+            graph.schema_features = list(obj.get("schema_features") or [])
             continue
 
         if record_type == "file":
@@ -215,8 +303,19 @@ def parse_snapshot_ndjson(source: str | Iterable[str]) -> Graph:
             to_id = obj.get("to_id")
             if not _is_internal(from_id) or not _is_internal(to_id):
                 continue  # skip external:import:* and symbol-scoped edges
+            # Keep the provider's grading fields; the evidence class is computed
+            # in _finalize() once the summary record has been seen.
             graph.relations.append(
-                {"from_id": from_id, "to_id": to_id, "type": "IMPORTS"}
+                {
+                    "from_id": from_id,
+                    "to_id": to_id,
+                    "type": "IMPORTS",
+                    "confidence": obj.get("confidence"),
+                    "resolution": obj.get("resolution"),
+                    "relation_scope": obj.get("relation_scope"),
+                    "target_kind": obj.get("target_kind"),
+                    "warning_codes": list(obj.get("warning_codes") or []),
+                }
             )
             continue
 
@@ -228,10 +327,66 @@ def parse_snapshot_ndjson(source: str | Iterable[str]) -> Graph:
                 graph.test_edges.append(edge)
             continue
 
-        # symbol / external / summary / anything else: ignored.
+        if record_type == "summary":
+            graph.partial_failures = list(obj.get("partial_failures") or [])
+            graph.warnings = list(obj.get("warnings") or [])
+            graph.language_tiers = dict(obj.get("language_tiers") or {})
+            stats = obj.get("stats") or {}
+            graph.completeness_level = stats.get("completeness_level") or "ok"
+            continue
+
+        # symbol / external / anything else: ignored.
 
     _link_relations(graph)
+    _finalize_evidence(graph)
     return graph
+
+
+def _finalize_evidence(graph: Graph) -> None:
+    """Second pass: tier the files, resolve unparsed paths, grade every edge."""
+    for node in graph.files.values():
+        node.language_tier = graph.language_tiers.get(node.language or "")
+
+    files_map = graph.path_by_id()
+    id_by_path = graph.id_by_path()
+    unparsed: set[str] = set()
+    for pf in graph.partial_failures:
+        raw = pf.get("path") or pf.get("file") or pf.get("file_path")
+        if not raw:
+            continue
+        resolved = resolve_path_from_id(raw, files_map)
+        if not resolved and ":" not in raw:
+            resolved = raw  # provider gave a bare repo-relative path
+        if not resolved:
+            continue
+        unparsed.add(resolved)
+        node = graph.files.get(id_by_path.get(resolved, ""))
+        if node is not None:
+            node.parsed = False
+    graph.unparsed_files = sorted(unparsed)
+
+    # Grade each edge on its own merits. A snapshot-wide parse failure elsewhere
+    # in the repo (a broken example file, say) must NOT poison unrelated edges —
+    # only an edge that actually touches an unparsed file is downgraded here, and
+    # surface-scoped partial-ness is applied later in resolve_affected_tests().
+    unparsed_set = set(graph.unparsed_files)
+    supported = graph.resolution_supported()
+    for rel in graph.relations:
+        src_path = resolve_path_from_id(rel["from_id"], files_map)
+        dst_path = resolve_path_from_id(rel["to_id"], files_map)
+        src_node = graph.files.get(rel["from_id"])
+        tier = src_node.language_tier if src_node is not None else None
+        if (src_path in unparsed_set) or (dst_path in unparsed_set):
+            cls = evidence.UNVERIFIED
+        else:
+            cls = evidence.classify_relation(
+                rel,
+                language_tier=tier,
+                resolution_supported=supported,
+            )
+        rel["evidence_class"] = cls
+        if src_path and dst_path:
+            graph.edge_class[(src_path, dst_path)] = cls
 
 
 def _resolve_tests_edge(obj: dict) -> dict | None:
@@ -369,6 +524,42 @@ def reverse_import_surface(
     return sorted(seen)
 
 
+def reverse_import_surface_classified(
+    modified: Sequence[str],
+    imported_by_edges: dict[str, dict[str, str]],
+    *,
+    max_depth: int = 0,
+) -> dict[str, str]:
+    """Like :func:`reverse_import_surface` but returns ``{path: evidence class}``.
+
+    Each entry carries the *weakest* edge class crossed on the shortest chain
+    from a modified file to that entry — the "graph is evidence, not an oracle"
+    rule: a surface file reachable only through a ``heuristic`` import is itself
+    ``heuristic``; one reached through an ``unverified`` edge is ``unverified``.
+    Modified files themselves are ``confirmed`` (git, not the graph, put them
+    there).
+    """
+    best: dict[str, str] = {}
+    queue: deque[tuple[str, int]] = deque()
+    for path in modified:
+        if path not in best:
+            best[path] = evidence.CONFIRMED
+            queue.append((path, 0))
+
+    while queue:
+        path, depth = queue.popleft()
+        if max_depth and depth >= max_depth:
+            continue
+        here = best.get(path, evidence.CONFIRMED)
+        for importer, edge_cls in sorted(imported_by_edges.get(path, {}).items()):
+            reached = evidence.weakest((here, edge_cls))
+            if importer not in best or evidence.is_weaker(reached, best[importer]):
+                best[importer] = reached
+                queue.append((importer, depth + 1))
+
+    return best
+
+
 def get_modified_import_surface(
     repo_root: str = ".",
     *,
@@ -395,6 +586,43 @@ def get_modified_import_surface(
     )
     # Guarantee modified files appear even if the graph did not index them.
     return sorted(set(surface) | set(modified_files))
+
+
+def get_modified_import_surface_classified(
+    repo_root: str = ".",
+    *,
+    modified_files: Sequence[str] | None = None,
+    graph: Graph | None = None,
+    max_depth: int = 0,
+    worktree: bool = True,
+    entire_bin: str = DEFAULT_ENTIRE_BIN,
+    snapshot_text: str | None = None,
+) -> dict[str, str]:
+    """``{path: evidence class}`` for the whole blast radius of the current edits.
+
+    A modified file the graph never indexed is still returned, classed
+    ``unverified`` — the graph had nothing to say about it.
+    """
+    if graph is None:
+        graph = build_graph(
+            repo_root,
+            worktree=worktree,
+            entire_bin=entire_bin,
+            snapshot_text=snapshot_text,
+        )
+    if modified_files is None:
+        modified_files = get_modified_files(repo_root)
+
+    classified = reverse_import_surface_classified(
+        list(modified_files), graph.imported_by_edges(), max_depth=max_depth
+    )
+    indexed = set(graph.path_by_id().values())
+    for path in modified_files:
+        if path not in indexed:
+            classified[path] = evidence.UNVERIFIED
+        elif path not in classified:
+            classified[path] = evidence.CONFIRMED
+    return classified
 
 
 # ---------------------------------------------------------------------------

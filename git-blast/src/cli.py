@@ -26,6 +26,7 @@ _EXIT_ERROR = 2
 
 _OK_STATUSES = {
     runner.STATUS_PASSED,
+    runner.STATUS_PASSED_UNVERIFIED,
     runner.STATUS_NO_CHANGES,
     runner.STATUS_NO_TESTS,
     runner.STATUS_DRY_RUN,
@@ -57,6 +58,14 @@ def _build_parser() -> argparse.ArgumentParser:
     test.add_argument("--db", default=None, help="SQLite path (overrides $GIT_BLAST_DB)")
     test.add_argument("--max-depth", type=int, default=0,
                       help="reverse-import BFS depth (0 = unlimited)")
+    test.add_argument(
+        "--fallback", choices=runner.FALLBACK_MODES, default=runner.DEFAULT_FALLBACK,
+        help=(
+            "what to do when the graph cannot confirm the selection: "
+            "off (never widen) | report-only (flag only) | "
+            "dir (widen to the package's tests/ dir, default) | full (whole suite)"
+        ),
+    )
     test.add_argument("--dry-run", action="store_true",
                       help="resolve affected tests but do not run pytest")
     test.add_argument("--no-worktree", action="store_true",
@@ -103,6 +112,7 @@ def _cmd_test(args: argparse.Namespace) -> int:
             max_depth=args.max_depth,
             worktree=not args.no_worktree,
             dry_run=args.dry_run,
+            fallback=args.fallback,
         )
     except SnapshotError as exc:
         print(f"error: {exc}", file=sys.stderr)
@@ -114,6 +124,15 @@ def _cmd_test(args: argparse.Namespace) -> int:
         print(runner.format_agent_payload(result))
     else:
         print(runner.format_lean_output(result))
+
+    if result.get("confidence") == "low" or result.get("verification_required"):
+        n = len(result.get("verification_required") or [])
+        print(
+            f"warning: graph confidence {result.get('confidence')!r}; "
+            f"{n} item(s) need source/test verification "
+            f"(fallback_level={result.get('fallback_level')})",
+            file=sys.stderr,
+        )
 
     if result["status"] == runner.STATUS_FAILED:
         return _EXIT_TESTS_FAILED

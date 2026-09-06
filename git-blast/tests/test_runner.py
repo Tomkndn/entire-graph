@@ -204,15 +204,33 @@ def test_pipeline_records_execution_status(project, monkeypatch):
         db.close()
 
 
-def test_pipeline_no_tests_when_map_and_convention_empty(project, monkeypatch):
-    monkeypatch.setattr(
-        parser, "_run_snapshot",
-        lambda *a, **k: "\n".join([
-            json.dumps({"schema_version": "1.1", "repo_key": REPO_KEY}),
-            json.dumps({"record_type": "file", "id": _fid("src/lonely.py"),
-                        "path": "src/lonely.py", "language": "Python"}),
-        ]),
-    )
+def _lonely_snapshot():
+    return "\n".join([
+        json.dumps({"schema_version": "1.1", "repo_key": REPO_KEY}),
+        json.dumps({"record_type": "file", "id": _fid("src/lonely.py"),
+                    "path": "src/lonely.py", "language": "Python"}),
+    ])
+
+
+def test_pipeline_no_tests_with_fallback_off(project, monkeypatch):
+    monkeypatch.setattr(parser, "_run_snapshot", lambda *a, **k: _lonely_snapshot())
+    db = SQLiteDB(":memory:")
+    try:
+        result = run_impact_analysis(
+            str(project), "repo", db=db, modified_files=["src/lonely.py"],
+            fallback="off",
+        )
+    finally:
+        db.close()
+    assert result["status"] == "NO_TESTS"
+    # db miss -> convention miss: the last mechanism tried was convention (1).
+    assert result["fallback_level"] == 1
+
+
+def test_pipeline_no_narrow_selection_escalates_to_dir_fallback(project, monkeypatch):
+    # map + convention produce nothing: the graph cannot derive a narrow set, so
+    # the default ladder widens to the package's tests/ dir (Track 2 fallback).
+    monkeypatch.setattr(parser, "_run_snapshot", lambda *a, **k: _lonely_snapshot())
     db = SQLiteDB(":memory:")
     try:
         result = run_impact_analysis(
@@ -220,4 +238,6 @@ def test_pipeline_no_tests_when_map_and_convention_empty(project, monkeypatch):
         )
     finally:
         db.close()
-    assert result["status"] == "NO_TESTS"
+    assert result["fallback_level"] == 2
+    assert "tests/test_a.py" in result["target_tests_executed"]
+    assert result["status"] in ("PASSED", "PASSED_UNVERIFIED")

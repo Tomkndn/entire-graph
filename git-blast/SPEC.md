@@ -210,12 +210,90 @@ React Flow graph visualization with real-time state updates via WebSocket.
 | httpie/cli | ~50 | 32 | 156 | sessions.py, cookies.py, downloads.py — all PASSED |
 | demo_repo (built-in) | 2 | 2 | 3 | jwt.py, config.py — all PASSED |
 
+## Evidence Classes & Partial Analysis (Track 2)
+
+The code graph is **evidence, not an oracle**. Some repositories use dynamic
+dispatch, generated code, or reflection that static analysis cannot fully
+resolve, and `entire graph snapshot` can itself report partial failures. Every
+selection Git-Blast makes is therefore graded so users and agents can tell
+apart confirmed structural evidence, heuristic evidence, and claims that need
+source or test verification.
+
+### The classes (`src/evidence.py`)
+
+| Class | Meaning | How it is decided |
+|---|---|---|
+| `confirmed` | structural fact | `resolution` in {`exact`, `import_resolved`}, `confidence ≥ 0.85`, no `warning_codes`, semantic-tier language, snapshot not partial |
+| `heuristic` | graph produced it, weak | `resolution` in {`name_only`, `import_external`}, `0.5 ≤ confidence < 0.85`, a `warning_code`, a missing `resolution`, or a test picked by filename convention |
+| `unverified` | unresolved / partial | an edge **touching** an unparsed file; an inventory-only language on a **surface** file; an unparsed file **on the surface**; `confidence < 0.5`; a modified file with no static importers in a package that imports dynamically; a surface file reachable only through a weaker edge |
+
+> **Partial-ness is scoped, never repo-wide.** One broken file elsewhere in the
+> repo (e.g. Flask ships `examples/tutorial/flaskr/schema.sql` with a
+> tree-sitter syntax error) puts `snapshot_partial()` at `True` and is counted
+> in `analysis_completeness.repo_parse_failures`, but it does **not** downgrade
+> the hundreds of clean `import_resolved` Python edges. Only edges that touch
+> the unparsed file, or a change whose own surface includes it, are affected.
+> Likewise a bare `completeness_level: degraded` — normal for any polyglot repo
+> because of inventory-only languages (YAML, Make, HTML, …) — does not by itself
+> force `unverified`.
+
+The classifier is calibrated for provider `v0.4.0`; it feature-detects
+`relation_resolution` in the snapshot header and degrades to `heuristic` when a
+snapshot predates the grading fields.
+
+### Result fields added
+
+```
+confidence            : "high" | "medium" | "low"           (weakest link to the tests)
+evidence              : {confirmed: [...], heuristic: [...], unverified: [...]}
+analysis_completeness : {level, completeness_level, partial_failures,
+                         inventory_only_languages, unparsed_files,
+                         dynamic_dispatch_hits: [{path, markers}]}
+verification_required : [{path, reason}]   (coverage the graph could NOT confirm)
+fallback_level        : 0 db | 1 convention | 2 tests/ dir | 3 whole suite
+```
+
+New status: **`PASSED_UNVERIFIED`** — the selected tests passed, but the graph
+could not confirm the selection covers the change. Never reported as a plain
+`PASSED`. Exit code 0 (with a stderr warning from the CLI).
+
+### The safe fallback / verification path
+
+`--fallback` (CLI) / `fallback=` (MCP, `run_impact_analysis`) / `GIT_BLAST_FALLBACK`:
+
+| Mode | Behaviour when confidence is not `high` (or no narrow set can be derived) |
+|---|---|
+| `off` | never widen; original lean behaviour |
+| `report-only` | annotate `confidence` / `verification_required`, run only the graph's selection |
+| `dir` *(default)* | widen to the `tests/` directories of the modified packages |
+| `full` | widen to the whole pytest suite (`failure_summary` still capped) |
+
+Fully-resolved code is unaffected: an edit whose surface is all `confirmed`
+gets `confidence: high`, `fallback_level: 0`, and a byte-identical selection to
+before Track 2.
+
+### Fixture
+
+`demo_repo_partial/` is a deliberately partially-analysable repo: `src/core.py`
+reaches `src/handlers/*` only through `importlib` + `getattr` in
+`src/registry.py`, so the graph has no edge to the handlers.
+`tests/test_partial_repo.py` asserts that editing a handler yields
+`PASSED_UNVERIFIED` with the file in `verification_required` and a fallback
+still running its test, while editing `src/core.py` stays a plain high-confidence
+`PASSED`. A captured snapshot is checked in at
+`tests/fixtures/partial_repo.ndjson`.
+
+See [`docs/evidence-consumers.md`](./docs/evidence-consumers.md) for the map of
+which code consumes relationship / impact / semantic-diff evidence.
+
 ## Known Limitations
 
 - **File-level granularity only.** Editing one function in a file triggers all tests that import that file, even if they use a different function. Runtime coverage tools like pytest-testmon track at method level.
-- **Static analysis misses dynamic dispatch.** `getattr`, plugin registries, monkey-patching, and runtime-wired code won't appear in the AST graph. Tests exercising those paths may be missed.
+- **Static analysis misses dynamic dispatch.** `getattr`, plugin registries, monkey-patching, and runtime-wired code won't appear in the AST graph. Git-Blast now *detects* the pattern (a source scan for `getattr` / `importlib` / `entry_points` / `.register(` …) and marks affected selections `unverified` so a fallback runs and the verdict is `PASSED_UNVERIFIED` — but it still cannot pinpoint exactly which dynamically-reached tests matter.
 - **No historical signal.** Does not learn from past test failures. Pure structural analysis.
 - **checkpoint_logs table exists but is not wired.** No Entire checkpoint hooks feed into it during normal flow.
+- **`module_test_map` has no `evidence_class` column yet.** Evidence is recomputed live from the snapshot on every blast; it is not persisted per mapping.
+- **Dashboard is not evidence-aware.** Node/edge glow does not yet reflect `confirmed` / `heuristic` / `unverified`.
 
 ## Next Stage: Databricks Integration
 

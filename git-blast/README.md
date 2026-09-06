@@ -33,8 +33,10 @@ pytest -q --tb=short --no-header  over just those test files
 | `src/mcp_server.py` | MCP tool (`git_blast_test`) for agent integration |
 | `src/server.py` | FastAPI: REST + WebSocket + static dashboard |
 | `src/cli.py` | CLI entry point (`seed`, `test`) |
+| `src/evidence.py` | Evidence classification: `confirmed` / `heuristic` / `unverified` + dynamic-dispatch scan |
 | `frontend/` | React Flow dashboard (builds to `static/`) |
-| `demo_repo/` | Built-in two-module target repo |
+| `demo_repo/` | Built-in two-module target repo (fully resolved) |
+| `demo_repo_partial/` | Fixture with dynamic dispatch the graph cannot fully resolve |
 | `schema.sql` | SQLite DDL |
 
 ## CLI
@@ -49,10 +51,27 @@ python3 -m src.cli seed --demo --repo-id demo_repo
 # Run the tests affected by the current working-tree changes
 python3 -m src.cli test --repo-root /path/to/repo --repo-id myrepo
 python3 -m src.cli test --repo-root . --repo-id myrepo --format agent --dry-run
+
+# Control what happens when the graph cannot confirm the selection
+python3 -m src.cli test --repo-root . --repo-id myrepo --fallback full
 ```
 
-`test` exits 0 for `PASSED` / `NO_CHANGES` / `NO_TESTS` / `DRY_RUN`, 1 for
-`FAILED`, 2 for an error (snapshot failure, `--max-depth < 0`).
+`test` exits 0 for `PASSED` / `PASSED_UNVERIFIED` / `NO_CHANGES` / `NO_TESTS` /
+`DRY_RUN`, 1 for `FAILED`, 2 for an error (snapshot failure, `--max-depth < 0`).
+
+### Evidence & confidence (Track 2)
+
+The graph is evidence, not an oracle. Every result carries `confidence`
+(`high` / `medium` / `low`), an `evidence` split of the surface into
+`confirmed` / `heuristic` / `unverified`, `verification_required` (coverage the
+graph could not confirm), and `fallback_level`. A `low`-confidence pass is
+reported as `PASSED_UNVERIFIED`, never a plain `PASSED`.
+
+`--fallback` (`GIT_BLAST_FALLBACK`): `off` | `report-only` | `dir` *(default,
+widen to the package's `tests/` dir)* | `full` *(whole suite)*. Fully-resolved
+code is unaffected — `confidence: high`, `fallback_level: 0`, same selection as
+before. See [`SPEC.md`](./SPEC.md#evidence-classes--partial-analysis-track-2)
+and [`docs/evidence-consumers.md`](./docs/evidence-consumers.md).
 
 ## Dashboard
 
@@ -91,6 +110,7 @@ uv run --extra dev python -m pytest tests/ -v
 | `GIT_BLAST_REPO_ROOT` | Target repo path (server / MCP) | `.` |
 | `GIT_BLAST_REPO_ID` | Repo identifier for DB queries | `main-repo` |
 | `GIT_BLAST_ENTIRE_BIN` | Entire CLI binary name | `entire` |
+| `GIT_BLAST_FALLBACK` | Fallback policy: `off` / `report-only` / `dir` / `full` | `dir` |
 | `DATABRICKS_SERVER_HOSTNAME` | Databricks SQL Warehouse host | unset (uses SQLite) |
 | `DATABRICKS_HTTP_PATH` | Databricks SQL Warehouse HTTP path | unset |
 | `DATABRICKS_TOKEN` | Databricks personal access token | unset |
