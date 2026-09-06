@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "3883ecddc59d",
+  "strategy": "manual-commit",
+  "branch": "git-blast",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "git-blast/README.md",
+    "git-blast/pyproject.toml",
+    "git-blast/src/runner.py",
+    "git-blast/tests/test_integration.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/38/83ecddc59d/0/metadata.json",
+      "transcript": "/38/83ecddc59d/0/full.jsonl",
+      "compact_transcript": "/38/83ecddc59d/0/transcript.jsonl",
+      "content_hash": "/38/83ecddc59d/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 18,
+    "cache_creation_tokens": 10770,
+    "cache_read_tokens": 2212532,
+    "output_tokens": 8851,
+    "api_call_count": 9
+  }
+}
