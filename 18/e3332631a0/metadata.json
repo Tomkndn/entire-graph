@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "18e3332631a0",
+  "strategy": "manual-commit",
+  "branch": "git-blast",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "git-blast/src/db.py",
+    "git-blast/src/matcher.py",
+    "git-blast/src/parser.py",
+    "git-blast/tests/test_databricks.py",
+    "git-blast/tests/test_db.py",
+    "git-blast/tests/test_matcher.py",
+    "git-blast/tests/test_parser.py",
+    "git-blast/tests/test_seed.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/18/e3332631a0/0/metadata.json",
+      "transcript": "/18/e3332631a0/0/full.jsonl",
+      "compact_transcript": "/18/e3332631a0/0/transcript.jsonl",
+      "content_hash": "/18/e3332631a0/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 40,
+    "cache_creation_tokens": 32424,
+    "cache_read_tokens": 3036121,
+    "output_tokens": 27175,
+    "api_call_count": 20
+  }
+}
